@@ -49,8 +49,8 @@
 
 (defcustom ical2org/event-format
 "* {SUMMARY}
-{LINES}
-{DESCRIPTION}"
+{LINES}{DESCRIPTION}
+"
   "String used to format an event.
 Syntax is {FIELD} valid values for FIELD are: SUMMARY, LOCATION, TIME, URL,
 DESCRIPTION, ORGANIZER, CATEGORY.  Namely the slots of the `ical2org/event'
