@@ -190,19 +190,23 @@ is non-nil."
 
 (defun ical2org/format-event (event)
   "Replace formatstrings with slots of `EVENT'."
-  (replace-regexp-in-string "{.*?}"
-                            (lambda (z)
-                              (cdr (assoc z
-                                          `(("{SUMMARY}"     . ,(ical2org/event-summary event))
-					    ("{LINES}"	     . ,(ical2org/format-event-lines event))
-                                            ("{DESCRIPTION}" . ,(ical2org/event-description event))
-                                            ;; ("{CATEGORY}"    . ,(mapconcat 'identity
-                                            ;;                                (ical2org/event-category event)
-                                            ;;                                ical2org/category-separator)
-					     ))
-                                          ))
-                            ical2org/event-format
-                            t t))
+  (replace-regexp-in-string
+   "{.*?}"
+   (lambda (z)
+     (let ((subst (assoc z
+			 `(("{SUMMARY}"     . ,(ical2org/event-summary event))
+			   ("{LINES}"	     . ,(ical2org/format-event-lines event))
+			   ("{DESCRIPTION}" . ,(ical2org/event-description event))
+			   ("{CATEGORY}"    . ,(mapconcat 'identity
+							  (ical2org/event-category event)
+							  ical2org/category-separator)
+			    )))))
+       (if subst
+	   (cdr subst)
+	 "")))
+   ical2org/event-format
+   t t))
+
 
 (defun ical2org/org-recurrent (event start-decoded start-time end-time)
   "Wrap `icalendar--convert-recurring-to-diary' diary in an org timestamp."
