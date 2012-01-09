@@ -48,16 +48,28 @@
   :prefix "ical2org/")
 
 (defcustom ical2org/event-format
-"* {SUMMARY} at {LOCATION}           :{CATEGORY}:
-  {TIME}
-  {ORGANIZER}
-  {URL}
-  {DESCRIPTION}"
+"* {SUMMARY}
+{LINES}
+{DESCRIPTION}"
   "String used to format an event.
 Syntax is {FIELD} valid values for FIELD are: SUMMARY, LOCATION, TIME, URL,
 DESCRIPTION, ORGANIZER, CATEGORY.  Namely the slots of the `ical2org/event'
 struct (capitalized)."
   :type '(string))
+
+(defcustom ical2org/event-line-format
+  '(
+    (org-timestr . "{org-timestr}\n")
+    (location . "Location: {location}\n")
+    (organizer . "Organizer: {organizer}\n")
+    (url . "Url: {url}\n")
+    )
+  "Syntax and order of fields for the special {LINES} field of `ical2org/event-format'"
+  :group 'ical2org
+  :type '(list (cons symbol string)
+	       (cons symbol string)
+	       (cons symbol string)
+	       (cons symbol string)))
 
 (defcustom ical2org/category-separator ":"
   "String used to separate multiple categories."
@@ -121,21 +133,37 @@ Saves when `NOSAVE' is non-nil."
 ;; private
 
 ;; output formatting
+(defun ical2org/format-event-lines (event)
+  "Replace formatstrings of ical2org/event-line-format with slots of `EVENT'."
+  (mapconcat (lambda (line-spec)
+	       (let* ((fq-symbol (intern (concat "ical2org/event-" (symbol-name (car line-spec)))))
+		      (symbol-string (symbol-name (car line-spec)))
+		      (enclosed-symbol-string (concat "{" symbol-string "}"))
+		      (fq-symbol-value (funcall (symbol-function fq-symbol) event)))
+
+		 (if (string= fq-symbol-value "")
+		     ""
+		   (replace-regexp-in-string
+		    enclosed-symbol-string
+		    (lambda (z) fq-symbol-value)
+		    (cdr line-spec)))))
+	     ical2org/event-line-format
+	     ""))
+
+
 (defun ical2org/format (event)
   "Replace formatstrings with slots of `EVENT'."
   (replace-regexp-in-string "{.*?}"
                             (lambda (z)
                               (cdr (assoc z
                                           `(("{SUMMARY}"     . ,(ical2org/event-summary event))
-                                            ("{LOCATION}"    . ,(ical2org/event-location event))
-                                            ("{TIME}"        . ,(ical2org/event-org-timestr event))
-                                            ("{URL}"         . ,(ical2org/event-url event))
+					    ("{LINES}"	     . ,(ical2org/format-event-lines event))
                                             ("{DESCRIPTION}" . ,(ical2org/event-description event))
-                                            ("{ORGANIZER}"   . ,(ical2org/event-organizer event))
-                                            ("{CATEGORY}"    . ,(mapconcat 'identity
-                                                                           (ical2org/event-category event)
-                                                                           ical2org/category-separator)))
-                                          )))
+                                            ;; ("{CATEGORY}"    . ,(mapconcat 'identity
+                                            ;;                                (ical2org/event-category event)
+                                            ;;                                ical2org/category-separator)
+					     ))
+                                          ))
                             ical2org/event-format
                             t t))
 
