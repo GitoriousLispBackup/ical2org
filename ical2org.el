@@ -95,7 +95,8 @@ Has to be compatible to `completing-read'."
       (dolist (e events)
         (insert (ical2org/format-event e)))
       (unless nosave
-        (save-buffer)))))
+        (save-buffer))
+      (org-mode))))
 
 
 (defun ical2org/import-file-to-buffer (fname bufout &optional nosave)
