@@ -1,7 +1,9 @@
 ;;; ics2org.el -- convert icalendar to org
 
 ;; Copyright (C) 2010, 2011 Michael Markert
+;; Copytight (C) 2012 Ludovic Stordeur
 ;; Author: Michael Markert <markert.michael@googlemail.com>
+;; Author: Ludovic Stordeur <ludovic@okazoo.eu>
 ;; Created: 2010/12/29
 ;; Version: 0.3.1
 ;; Keywords: org, calendar
