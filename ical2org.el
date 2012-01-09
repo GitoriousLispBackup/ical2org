@@ -80,22 +80,57 @@ struct (capitalized)."
 Has to be compatible to `completing-read'."
   :type '(function))
 
-(defun ical2org/convert-file (fname outfile &optional nosave)
-  "Convert ical events from file `FNAME' to `OUTFILE' and save when `NOSAVE' is non-nil."
-  (interactive "fFile to convert: \nFSave as: \nP")
-  (let ((events
-         (with-temp-buffer
-           (insert-file-contents (expand-file-name fname))
-           (ical2org/import-buffer (current-buffer)))))
+
+(defun ical2org/import-buffer-to-buffer (bufin bufout nosave)
+  "Convert ical events from buffer `BUFIN' to buffer `BUFOUT'."
+
+  (interactive "bIn: \nBOut: ")
+
+  (let ((events (ical2org/import-buffer bufin)))
+
     (save-current-buffer
-      (find-file outfile)
+      (set-buffer bufout)
       (goto-char (point-max))
       (newline)
       (dolist (e events)
-        (insert (ical2org/format e))
-        (newline))
+        (insert (ical2org/format-event e)))
       (unless nosave
         (save-buffer)))))
+
+
+(defun ical2org/import-file-to-buffer (fname bufout &optional nosave)
+  "Import ical events from file `FNAME' to the buffer `BUFOUT'."
+
+  (interactive "fFile to convert: \nP")
+
+  (with-temp-buffer
+    (insert-file-contents (expand-file-name fname))
+    (ical2org/import-buffer-to-buffer (current-buffer) bufout nosave)))
+
+
+(defun ical2org/import-file-to-file (fname outfile &optional nosave)
+  "Import ical events from file `FNAME' to `OUTFILE' and save unless `NOSAVE'
+is non-nil."
+
+  (interactive "fFile to convert: \nFSave as: \nP")
+
+  (save-current-buffer
+    (find-file outfile)
+    (ical2org/import-file-to-buffer fname (current-buffer) nosave)))
+
+
+(defun ical2org/convert-file (fname outfile &optional nosave)
+  "Convert ical events from file `FNAME' to `OUTFILE' and save unless `NOSAVE'
+is non-nil."
+
+  (interactive "fFile to convert: \nFSave as: \nP")
+
+  (save-current-buffer
+      (find-file outfile)
+      (goto-char (point-max))
+      (erase-buffer)
+      (ical2org/import-file-to-buffer fname (current-buffer) nosave)))
+
 
 (defun ical2org/import-to-agenda (fname &optional nosave)
   "Import ical events from file `FNAME' to agenda file (will be prompted).
@@ -151,7 +186,7 @@ Saves when `NOSAVE' is non-nil."
 	     ""))
 
 
-(defun ical2org/format (event)
+(defun ical2org/format-event (event)
   "Replace formatstrings with slots of `EVENT'."
   (replace-regexp-in-string "{.*?}"
                             (lambda (z)
