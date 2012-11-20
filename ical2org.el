@@ -86,7 +86,7 @@ Has to be compatible to `completing-read'."
 
   (interactive "bIn: \nBOut: ")
 
-  (let ((events (ical2org/import-buffer bufin)))
+  (let ((events (ical2org/parse-ical-events bufin)))
 
     (save-current-buffer
       (set-buffer bufout)
@@ -319,23 +319,18 @@ Where `decoded' is a decoded datetime,
                          :organizer organizer
                          :category category)))
 
-(defun ical2org/import-elements (ical-elements)
-  "Collects events from `ICAL-ELEMENTS' into a list of `ical2org/event's."
-  (let ((events (icalendar--all-events ical-elements))
-        (zone-map (icalendar--convert-all-timezones ical-elements)))
-    (loop for event in events
-          collect (ical2org/extract-event event zone-map))))
-
-(defun ical2org/import-buffer (buffer)
-  "Return all events in icalendar `BUFFER' as `ical2org/event's."
+(defun ical2org/parse-ical-events (buffer)
+  "Find all events in icalendar `BUFFER' and return them as a
+list of `ical2org/event's."
   (save-current-buffer
     (set-buffer (icalendar--get-unfolded-buffer buffer))
     (goto-char (point-min))
-    (if (re-search-forward "^BEGIN:VCALENDAR\\s-*$" nil t)
-        (progn
-          (beginning-of-line)
-          (ical2org/import-elements (icalendar--read-element nil nil)))
-      (message "Buffer does not contain icalendar contents!"))))
+
+    (let* ((ical-elements (icalendar--read-element nil nil))
+	   (ical-events (icalendar--all-events ical-elements))
+	   (zone-map (icalendar--convert-all-timezones ical-elements)))
+      (mapcar (lambda (ical-event)
+		(ical2org/extract-event ical-event zone-map)) ical-events))))
 
 (provide 'ical2org)
 
