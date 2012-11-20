@@ -210,9 +210,18 @@ is non-nil."
 
 (defun ical2org/org-recurrent (event start-decoded start-time end-time)
   "Wrap `icalendar--convert-recurring-to-diary' diary in an org timestamp."
-  (format "<%s>"
-          (icalendar--convert-recurring-to-diary event start-decoded
-                                                 start-time end-time)))
+  (let* ((diary-entry (icalendar--convert-recurring-to-diary event
+							     start-decoded
+							     start-time
+							     end-time))
+
+	 ;; DIRTY HACK: `icalendar--convert-recurring-to-diary' introduces a
+	 ;; trailing whitespace which Org seems not able to handle (making
+	 ;; recurring events not appearing in the Agenda view). I think this
+	 ;; issue should be addressed in Org (for robustness considerations)
+	 ;; but currently, let's fix it here;
+	 (diary-entry (replace-regexp-in-string " $" "" diary-entry)))
+    (format "<%s>" diary-entry)))
 
 (defun ical2org/org-timestamp (start end)
   "Format `START' and `END' as `org-time-stamp'."
