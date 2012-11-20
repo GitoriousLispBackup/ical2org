@@ -266,16 +266,18 @@ Where `decoded' is a decoded datetime,
      (rrule (ical2org/org-recurrent event (car start) start-time end-time))
      (t (ical2org/org-timestamp start end)))))
 
-(defun ical2org/extract-event (ical-event zone-map)
-  "Extracts `ical2org/event' from `ICAL-EVENT' using the timezone map `ZONE-MAP'."
+(defun ical2org/ical-event->event (ical-event zone-map)
+  "Make an `ical2org/event' object from the given `ICAL-EVENT'
+using the timezone map `ZONE-MAP'."
   (let ((summary (ical2org/get-property ical-event 'SUMMARY "" t))
         (location (ical2org/get-property ical-event 'LOCATION "" t))
         (org-timestr (ical2org/get-org-timestr ical-event zone-map))
         (url (ical2org/get-property ical-event 'URL ""))
         (description (ical2org/get-property ical-event 'DESCRIPTION "" t))
         (organizer (ical2org/get-property ical-event 'ORGANIZER "" t))
-        (category (split-string (ical2org/get-property ical-event 'CATEGORIES "" t)
-                                "," t)))
+        (category
+	 (split-string (ical2org/get-property ical-event 'CATEGORIES "" t)
+		       "," t)))
     (make-ical2org/event :summary summary
                          :location location
                          :org-timestr org-timestr
@@ -295,7 +297,8 @@ list of `ical2org/event's."
 	   (ical-events (icalendar--all-events ical-elements))
 	   (zone-map (icalendar--convert-all-timezones ical-elements)))
       (mapcar (lambda (ical-event)
-		(ical2org/extract-event ical-event zone-map)) ical-events))))
+		(ical2org/ical-event->event ical-event zone-map))
+	      ical-events))))
 
 (provide 'ical2org)
 
