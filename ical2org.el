@@ -132,41 +132,6 @@ is non-nil."
       (erase-buffer)
       (ical2org/import-file-to-buffer fname (current-buffer) nosave)))
 
-
-;; (defun ical2org/import-to-agenda (fname &optional nosave)
-;;   "Import ical events from file `FNAME' to agenda file (will be prompted).
-;; Saves when `NOSAVE' is non-nil."
-;;   (interactive "fFile to import: \nP")
-;;   (let ((agenda-file (funcall ical2org/completing-read
-;;                               "Agenda file: "
-;;                               (org-agenda-files)))
-;;         (events
-;;          (with-temp-buffer
-;;            (insert-file-contents (expand-file-name fname))
-;;            (ical2org/import-buffer (current-buffer)))))
-;;     (save-current-buffer
-;;       (find-file agenda-file)
-;;       (goto-char (point-max))
-;;       (newline)
-;;       (dolist (e events)
-;;         (insert (ical2org/format e))
-;;         (newline))
-;;       (unless nosave
-;;         (save-buffer)))))
-
-
-;; (defun ical2org/buffer-to-buffer (in out)
-;;   "Convert ical events from buffer `IN' to buffer `OUT'."
-;;   (interactive "bIn: \nBOut: ")
-;;   (save-current-buffer
-;;     (let ((events (ical2org/import-buffer in)))
-;;       (set-buffer (generate-new-buffer out))
-;;       (dolist (e events)
-;;         (insert (ical2org/format e))
-;;         (newline))
-;;       (set-window-buffer nil out)
-;;       (org-mode))))
-
 ;; private
 
 ;; output formatting
